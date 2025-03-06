@@ -4,7 +4,7 @@
 use defmt::info;
 use embassy_executor::Spawner;
 use esp_hal::{prelude::*, rng::Rng};
-use esp_wifi::{esp_now::BROADCAST_ADDRESS, EspWifiController};
+use esp_wifi::{esp_now::BROADCAST_ADDRESS, wifi::Protocol, EspWifiController};
 use {defmt_rtt as _, esp_backtrace as _};
 
 extern crate alloc;
@@ -48,6 +48,7 @@ async fn main(spawner: Spawner) {
 
     let wifi = peripherals.WIFI;
     let mut esp_now = esp_wifi::esp_now::EspNow::new(&esp_wifi_ctrl, wifi).unwrap();
+    esp_now.set_protocol(Protocol::P802D11LR.into()).unwrap();
     info!("esp-now version {}", esp_now.version().unwrap());
 
     loop {
