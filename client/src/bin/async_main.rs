@@ -8,6 +8,7 @@ use embassy_time::{Duration, Ticker};
 use esp_hal::{prelude::*, rng::Rng};
 use esp_wifi::{
     esp_now::{EspNow, BROADCAST_ADDRESS},
+    wifi::Protocol,
     EspWifiController,
 };
 use {defmt_rtt as _, esp_backtrace as _};
@@ -53,12 +54,13 @@ async fn main(spawner: Spawner) {
 
     let wifi = peripherals.WIFI;
     let mut esp_now = esp_wifi::esp_now::EspNow::new(&esp_wifi_ctrl, wifi).unwrap();
+    esp_now.set_protocol(Protocol::P802D11LR.into()).unwrap();
     info!("esp-now version {}", esp_now.version().unwrap());
 
     let mut total = 0;
     let mut success = 0;
 
-    let mut ticker = Ticker::every(Duration::from_secs(2));
+    let mut ticker = Ticker::every(Duration::from_millis(100));
     loop {
         total += 1;
         if ping(&mut esp_now).await {
@@ -81,7 +83,7 @@ async fn ping(esp_now: &mut EspNow<'_>) -> bool {
         .send_async(&BROADCAST_ADDRESS, &send_data)
         .await
         .unwrap();
-    let mut ticker = Ticker::every(Duration::from_secs(1));
+    let mut ticker = Ticker::every(Duration::from_millis(50));
     loop {
         let receive = async {
             loop {
